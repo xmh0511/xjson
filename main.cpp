@@ -308,11 +308,12 @@ void parse_block_array(const char*& iter)
         auto stack = json_stack.back();
         if(stack->jtype == value_type::ARRAY){
             stack->jarray.push_back(json{});
+            json_stack.push_back(&stack->jarray.back());
         }
         if(*iter == '{'){  // element is ojbect
 
         }else if(*iter == '\"'){  //element is string or bool or null or number
-//            std::cout<<"is string value element"<<std::endl;
+            std::cout<<"is string value element==="<<json_stack.size()<<std::endl;
             char open_token = *iter;
             iter++;
             std::string str;
@@ -377,7 +378,7 @@ int main()
     std::string test2 = "Rjson("
                         "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\","
                         "\"cnumber\":{\"v\":12.0123,\"success\":false,\"message\":\"this is just a message\"}},"
-                        "\"bb\":\"0000\",\"number\":-123456,\"list\":[\"1\"]}"
+                        "\"bb\":\"0000\",\"number\":-123456,\"list\":[\"1\",\"2\",\"3\"]}"
                         ")json";
     auto j2 = json_parse(test2);
     std::cout <<j2.jmap["a"].jmap["child"].value<<std::endl;
@@ -388,6 +389,7 @@ int main()
     std::cout <<j2.jmap["bb"].value<<std::endl;
     std::cout <<j2.jmap["number"].value<<std::endl;
     std::cout <<j2.jmap["list"].jarray[0].value<<std::endl;
-
+    std::cout <<j2.jmap["list"].jarray[1].value<<std::endl;
+    std::cout <<j2.jmap["list"].jarray[2].value<<std::endl;
 	return 0;
 }
