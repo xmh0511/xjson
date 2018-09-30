@@ -85,7 +85,7 @@ public:
 		}
 		return jmap[key];
 	}
-	json& operator[](int index)
+	json& operator[](std::size_t index)
 	{
 		if (jtype != value_type::ARRAY)
 		{
@@ -202,6 +202,16 @@ public:
 			throw json_error(message);
 		}
 	}
+
+	//operator bool()
+	//{
+	//	if (jtype == value_type::BOOL) {
+	//		return value == "true" ? true : false;
+	//	}
+	//	else {
+	//		throw json_error("type is not bool");
+	//	}
+	//}
 public:
 	std::string stringify()
 	{
@@ -443,6 +453,7 @@ protected:
 	void get_nill_str(const char*& iter)
 	{
 		std::string nill_token = read_token_value(iter);
+		trim_all(nill_token);
 		if (nill_token == "null" || nill_token == "NULL") {
 			auto stack = json_stack.back();
 			stack->jtype = value_type::NILL;
@@ -487,7 +498,7 @@ protected:
 		}
 
 		if (*iter == 'n') {
-
+			get_nill_str(iter);
 		}
 		json_stack.pop_back();
 		//skip_white_space(iter);
@@ -675,7 +686,7 @@ int main()
 	//    std::cout << j.jmap["b12"].jmap["name"].value << std::endl;
 	//    std::cout << j.jmap["c1"].value << std::endl;
 
-	std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":true  ,\"message\":\"this is just a message\"}},\"bb\":\"0000\",\"number\":-123456 ,\"list\":[{\"age\":18},{\"age\":20},\"hahahah\"]}";  //"1","2","3"
+	std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":true  ,\"message\":\"this is just a message\"}},\"bb\":\"0000\",\"number\":-123456 ,\"list\":[{\"age\":18},{\"age\":20},\"hahahah\"],\"time\":null}";  //"1","2","3"
 	auto j2 = json::json_parse(test2);
 	/*std::cout << j2.jmap["a"].jmap["child"].value << std::endl;*/
 	//std::cout << j2.jmap["a"].jmap["child2"].value << std::endl;
