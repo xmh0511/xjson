@@ -282,13 +282,13 @@ void parse_block_object(const char*& iter)
 				json_stack.push_back(&stack->jmap[key]);
 			}
 				break;
-			    case value_type::ARRAY:
-                {
-//                    std::cout<<"parent is array"<<std::endl;
-                    stack->jarray.push_back(json{});
-                    json_stack.push_back(&stack->jarray.back());
-                }
-                    break;
+//			    case value_type::ARRAY:
+//                {
+////                    std::cout<<"parent is array"<<std::endl;
+//                    stack->jarray.push_back(json{});
+//                    json_stack.push_back(&stack->jarray.back());
+//                }
+//                    break;
 			}
 			parse_value(iter);
 			//std::cout<<"after parse===" << *iter << *(iter + 1) << std::endl;
@@ -305,7 +305,7 @@ void parse_block_array(const char*& iter)
         if(*iter == ']'){
             break;
         }
-//        std::cout<<"in block array=="<<*iter<<std::endl;
+        std::cout<<"in block array=="<<*iter<<std::endl;
         auto stack = json_stack.back();
         if(*iter !=',' && *iter>32){
             if(stack->jtype == value_type::ARRAY){
@@ -319,9 +319,10 @@ void parse_block_array(const char*& iter)
              stack->jtype = value_type::OBJECT;
              iter++;
             parse_block_object(iter);
-           // json_stack.pop_back();
+//            std::cout<<"total size===="<<json_stack.size()<<std::endl;
+            json_stack.pop_back();
         }else if(*iter == '\"'){  //element is string or bool or null or number
-//            std::cout<<"is string value element==="<<json_stack.size()<<std::endl;
+            std::cout<<"is string value element==="<<json_stack.size()<<std::endl;
             char open_token = *iter;
             iter++;
             std::string str;
@@ -383,11 +384,7 @@ int main()
 //    std::cout << j.jmap["b12"].jmap["name"].value << std::endl;
 //    std::cout << j.jmap["c1"].value << std::endl;
 
-    std::string test2 = "Rjson("
-                        "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\","
-                        "\"cnumber\":{\"v\":12.0123,\"success\":false,\"message\":\"this is just a message\"}},"
-                        "\"bb\":\"0000\",\"number\":-123456,\"list\":[{\"age\":18},\"hahahah\"]}" //"1","2","3"
-                        ")json";
+    std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":false,\"message\":\"this is just a message\"}},\"bb\":\"0000\",\"number\":-123456,\"list\":[{\"age\":18},\"hahahah\"]}";  //"1","2","3"
     auto j2 = json_parse(test2);
     std::cout <<j2.jmap["a"].jmap["child"].value<<std::endl;
     std::cout <<j2.jmap["a"].jmap["child2"].value<<std::endl;
