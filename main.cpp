@@ -282,12 +282,12 @@ void parse_block_object(const char*& iter)
 				json_stack.push_back(&stack->jmap[key]);
 			}
 				break;
-//			    case value_type::ARRAY:
-//                {
-//                    stack->jarray.push_back(json{});
-//                    json_stack.push_back(&stack->jarray.back());
-//                }
-//                    break;
+			    case value_type::ARRAY:
+                {
+                    stack->jarray.push_back(json{});
+                    json_stack.push_back(&stack->jarray.back());
+                }
+                    break;
 			}
 			parse_value(iter);
 			//std::cout<<"after parse===" << *iter << *(iter + 1) << std::endl;
@@ -305,15 +305,18 @@ void parse_block_array(const char*& iter)
             break;
         }
 //        std::cout<<"in block array=="<<*iter<<std::endl;
-        auto stack = json_stack.back();
-        if(stack->jtype == value_type::ARRAY){
-            stack->jarray.push_back(json{});
-            json_stack.push_back(&stack->jarray.back());
+        if(*iter !=',' && *iter>32){
+            auto stack = json_stack.back();
+            if(stack->jtype == value_type::ARRAY){
+                stack->jarray.push_back(json{});
+                json_stack.push_back(&stack->jarray.back());
+            }
         }
         if(*iter == '{'){  // element is ojbect
-
+             iter++;
+            parse_block_object(iter);
         }else if(*iter == '\"'){  //element is string or bool or null or number
-            std::cout<<"is string value element==="<<json_stack.size()<<std::endl;
+//            std::cout<<"is string value element==="<<json_stack.size()<<std::endl;
             char open_token = *iter;
             iter++;
             std::string str;
