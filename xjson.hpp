@@ -4,12 +4,6 @@
 #include <string>
 #include <sstream>
 namespace xmh {
-	//enum class json_bool
-	//{
-	//    TRUE,
-	//    FALSE,
-	//    UNKNOW
-	//};
 	enum class value_type
 	{
 		INT,
@@ -186,7 +180,7 @@ namespace xmh {
 				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
 				throw json_error(message);
 			}
-			if (jarray.size() <= index) {
+			if (jarray.size() <= (std::size_t)index) {
 				std::string message = "out of json array range";
 				throw json_error(message);
 			}
@@ -533,12 +527,11 @@ public:
 		}
 		std::string read_token_value(const char*& iter)
 		{
-			std::string value;
+			const char* first = iter;
 			while (*iter && *iter != ',' && *iter != '}' && *iter != ']') {
-				value.append({ *iter });
 				iter++;
 			}
-			return value;
+			return std::string(first,iter);
 		}
 
 		void eat_white_space_and_char(const char*& iter, char c)
@@ -551,24 +544,23 @@ public:
 
 		std::string get_key_name(const char*& iter)
 		{
-			std::string name;
+			const char* first = iter;
 			while (*iter && *iter != '"') {
-				name.append({ *iter });
 				iter++;
 			}
+			std::string name(first, iter);
 			iter++;
 			return name;
 		}
 
 		void get_value_str(const char*& iter)
 		{
-			std::string str;
+			const char* first = iter;
 			while (*iter && *iter != '"') {
-				str.append({ *iter });
 				iter++;
 			}
 			auto stack = json_stack.back();
-			stack->value = std::move(str);
+			stack->value = std::string(first, iter);
 			//json_stack.pop_back();
 		}
 
@@ -736,25 +728,24 @@ public:
 										   //std::cout << "is string value element===" << json_stack.size() << std::endl;
 					char open_token = *iter;
 					iter++;
-					std::string str;
+					const char* first = iter;
 					bool in_string = true;
 					while (*iter && *iter != open_token && (*iter != ',' || in_string)) {
-						str.append({ *iter });
 						iter++;
 					}
 					//            std::cout<<"value string =="<<str<<std::endl;
 					auto stack = json_stack.back();
 					stack->jtype = value_type::STRING;
-					stack->value = std::move(str);
+					stack->value = std::string(first,iter);
 					json_stack.pop_back();
 				}
 				else {  //element is bool or null or number
-					std::string str;
+					const char* first = iter;
 					auto stack = json_stack.back();
 					while (*iter && *iter != ',' && *iter != ']') {
-						str.append({ *iter });
 						iter++;
 					}
+					std::string str(first, iter);
 					if (is_bool_str(str)) {
 						stack->jtype = value_type::BOOL;
 						stack->value = std::move(str);
@@ -788,46 +779,3 @@ public:
 		}
 	};
 }
-
-
-
-
-
-
-
-
-
-//json_bool validate_bool(const char* iter)
-//{
-//    // true or false
-//    json_bool result = json_bool::UNKNOW;
-//    if(*iter == 't')  //maybe true?
-//    {
-//        iter++;
-//        int size = 0;
-//        const char validate_str_true[3] = {'r','u','e'};
-//        while(size< 3)
-//        {
-//           if(*iter != validate_str_true[size]) {
-//               break;
-//           }
-//            result = json_bool::TRUE;
-//            iter++;
-//            size++;
-//        }
-//    }else if(*iter =='f'){ //maybe false?
-//        iter++;
-//        int size = 0;
-//        const char validate_str_true[4] = {'a','l','s','e'};
-//        while(size< 4)
-//        {
-//            if(*iter != validate_str_true[size]) {
-//                break;
-//            }
-//            result = json_bool::FALSE;
-//            iter++;
-//            size++;
-//        }
-//    }
-//    return result;
-//}
