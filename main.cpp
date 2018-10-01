@@ -54,6 +54,18 @@ int main()
 	for (auto iter : jjj) {
 		std::cout << "range===" << iter.stringify() << std::endl;
 	}
+	std::cout << "--------------------------------" << std::endl;
+	xmh::json root;
+	xmh::json iter;
+	xmh::json iter2;
+	iter["age"] = 18;
+	iter2["age"] = 26;
+	root["abc"] = "text";
+	root["list"].push_back(iter);
+	std::cout << root.stringify() << std::endl;
+	root["list"][0] = iter2;
+	root["list"].push_back(iter);
+	std::cout << root.stringify() << std::endl;
 	std::cin.get();
 	return 0;
 }
