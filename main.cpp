@@ -41,6 +41,19 @@ int main()
 	std::cout << num << std::endl;
 	bool flag = j2["a"]["cnumber"]["success"];
 	std::cout << flag << std::endl;
+	std::cout << "--------------------------------" << std::endl;
+	auto& jjj = j2["a"]["cnumber"];
+	for (auto iter = jjj.begin(); iter != jjj.end();iter++)
+	{
+		std::cout << iter.key()<<"-----"<<iter.value().stringify() << std::endl;
+	}
+	auto& jja = j2["list"];
+	for (auto iter = jja.begin(); iter != jja.end(); ++iter) {
+		std::cout << (*iter).stringify() << std::endl;
+	}
+	for (auto iter : jjj) {
+		std::cout << "range===" << iter.stringify() << std::endl;
+	}
 	std::cin.get();
 	return 0;
 }
