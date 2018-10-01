@@ -22,7 +22,7 @@ namespace xmh {
 		{
 
 		}
-		char const* what() const
+		char const* what() const noexcept
 		{
 			return message.c_str();
 		}
@@ -34,16 +34,16 @@ namespace xmh {
 	class json_iterator
 	{
 	public:
-		json_iterator(typename std::vector<T>::iterator arr_iter, value_type v_t):arr_iter_(arr_iter), json_type(v_t)
+		json_iterator(typename std::vector<T>::iterator arr_iter, value_type v_t) :arr_iter_(arr_iter), json_type(v_t)
 		{
 
 		}
-		json_iterator(typename std::map<std::string,T>::iterator map_iter, value_type v_t):map_iter_(map_iter), json_type(v_t)
+		json_iterator(typename std::map<std::string, T>::iterator map_iter, value_type v_t) :map_iter_(map_iter), json_type(v_t)
 		{
 
 		}
 	public:
-		json_iterator& operator++()
+		json_iterator & operator++()
 		{
 			if (json_type == value_type::ARRAY)
 			{
@@ -87,7 +87,7 @@ namespace xmh {
 			throw json_error("illegality operator for the type");
 		}
 	public:
-		T& operator*()
+		T & operator*()
 		{
 			if (json_type == value_type::ARRAY) {
 				return *arr_iter_;
@@ -186,13 +186,13 @@ namespace xmh {
 			}
 			return jarray[index];
 		}
+		//		template<typename T>
+		//		T get()
+		//		{
+		//
+		//		}
 		template<typename T>
-		T get()
-		{
-
-		}
-		template<>
-		int get<int>()
+		std::enable_if_t<std::is_same_v<int, T>, int> get()
 		{
 			if (jtype != value_type::INT) {
 				std::string message = "illegality get,the value type is not int";
@@ -201,8 +201,8 @@ namespace xmh {
 			return atoi(value.c_str());
 		}
 
-		template<>
-		double get<double>()
+		template<typename T>
+		std::enable_if_t<std::is_same_v<double, T>, double> get()
 		{
 			if (jtype != value_type::DOUBLE) {
 				std::string message = "illegality get,the value type is not double";
@@ -211,8 +211,8 @@ namespace xmh {
 			return atof(value.c_str());
 		}
 
-		template<>
-		std::string get<std::string>()
+		template<typename T>
+		std::enable_if_t<std::is_same_v<std::string, T>, std::string> get()
 		{
 			if (jtype != value_type::STRING) {
 				std::string message = "illegality get,the value type is not string";
@@ -221,8 +221,8 @@ namespace xmh {
 			return value;
 		}
 
-		template<>
-		std::nullptr_t get<std::nullptr_t>()
+		template<typename T>
+		std::enable_if_t<std::is_same_v<std::nullptr_t, T>, std::nullptr_t> get()
 		{
 			if (jtype != value_type::NILL) {
 				std::string message = "illegality get,the value type is not null";
@@ -230,8 +230,8 @@ namespace xmh {
 			}
 			return std::nullptr_t{};
 		}
-		template<>
-		bool get<bool>()
+		template<typename T>
+		std::enable_if_t<std::is_same_v<bool, T>, bool> get()
 		{
 			if (jtype != value_type::BOOL) {
 				std::string message = "illegality get,the value type is not bool";
@@ -359,41 +359,41 @@ namespace xmh {
 		{
 			return jtype == value_type::NILL;
 		}
-public:
-	json_iterator<json> begin()
-	{
-		std::string message = "illegality operator begin,the type is not array or object";
-		if ((jtype != value_type::ARRAY) && (jtype != value_type::OBJECT))
+	public:
+		json_iterator<json> begin()
 		{
+			std::string message = "illegality operator begin,the type is not array or object";
+			if ((jtype != value_type::ARRAY) && (jtype != value_type::OBJECT))
+			{
+				throw json_error(message);
+			}
+			if (jtype == value_type::ARRAY)
+			{
+				return json_iterator<json>(jarray.begin(), jtype);
+			}
+			if (jtype == value_type::OBJECT)
+			{
+				return json_iterator<json>(jmap.begin(), jtype);
+			}
 			throw json_error(message);
 		}
-		if (jtype == value_type::ARRAY)
+		json_iterator<json> end()
 		{
-			return json_iterator<json>(jarray.begin(), jtype);
-		}
-		if (jtype == value_type::OBJECT)
-		{
-			return json_iterator<json>(jmap.begin(), jtype);
-		}
-		throw json_error(message);
-	}
-	json_iterator<json> end()
-	{
-		std::string message = "illegality operator begin,the type is not array or object";
-		if (jtype != value_type::ARRAY && jtype != value_type::OBJECT)
-		{
+			std::string message = "illegality operator begin,the type is not array or object";
+			if (jtype != value_type::ARRAY && jtype != value_type::OBJECT)
+			{
+				throw json_error(message);
+			}
+			if (jtype == value_type::ARRAY)
+			{
+				return json_iterator<json>(jarray.end(), jtype);
+			}
+			if (jtype == value_type::OBJECT)
+			{
+				return json_iterator<json>(jmap.end(), jtype);
+			}
 			throw json_error(message);
 		}
-		if (jtype == value_type::ARRAY)
-		{
-			return json_iterator<json>(jarray.end(), jtype);
-		}
-		if (jtype == value_type::OBJECT)
-		{
-			return json_iterator<json>(jmap.end(), jtype);
-		}
-		throw json_error(message);
-	}
 	public:
 		void push_back(const json& j)
 		{
@@ -531,7 +531,7 @@ public:
 			while (*iter && *iter != ',' && *iter != '}' && *iter != ']') {
 				iter++;
 			}
-			return std::string(first,iter);
+			return std::string(first, iter);
 		}
 
 		void eat_white_space_and_char(const char*& iter, char c)
@@ -736,7 +736,7 @@ public:
 					//            std::cout<<"value string =="<<str<<std::endl;
 					auto stack = json_stack.back();
 					stack->jtype = value_type::STRING;
-					stack->value = std::string(first,iter);
+					stack->value = std::string(first, iter);
 					json_stack.pop_back();
 				}
 				else {  //element is bool or null or number
