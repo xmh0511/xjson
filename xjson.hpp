@@ -159,9 +159,15 @@ namespace xmh {
 			}
 		}
 	public:
-		json() = default;
+		json()
+		{
+			jtype = value_type::UNKNOW;
+		}
 		json& operator[](const std::string& key)
 		{
+			if (jtype == value_type::UNKNOW) {
+				jtype = value_type::OBJECT;
+			}
 			if (jtype != value_type::OBJECT)
 			{
 				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
@@ -173,7 +179,7 @@ namespace xmh {
 		{
 			return operator[](std::string(str));
 		}
-		json& operator[](std::size_t index)
+		json& operator[](int index)
 		{
 			if (jtype != value_type::ARRAY)
 			{
@@ -242,57 +248,39 @@ namespace xmh {
 	public:
 		json & operator=(int v)
 		{
-			if (jtype == value_type::INT) {
-				value = std::to_string(v);
-			}
-			else {
-				std::string message = "illegality operator =,because the value type is" + value_type_name(jtype) + " set value type is int";
-				throw json_error(message);
-			}
+			value = std::to_string(v);
+			jtype = value_type::INT;
 			return *this;
 		}
 		json& operator=(const std::string& v)
 		{
-			if (jtype == value_type::STRING) {
-				value = v;
-			}
-			else {
-				std::string message = "illegality operator =,because the value type is" + value_type_name(jtype) + " set value type is string";
-				throw json_error(message);
-			}
+			value = v;
+			jtype = value_type::STRING;
 			return *this;
 		}
+		json& operator=(const char* v)
+		{
+			value = std::string(v);
+			jtype = value_type::STRING;
+			return *this;
+		}
+
 		json& operator=(double v)
 		{
-			if (jtype == value_type::DOUBLE) {
-				value = std::to_string(v);
-			}
-			else {
-				std::string message = "illegality operator =,because the value type is" + value_type_name(jtype) + " set value type is double";
-				throw json_error(message);
-			}
+			value = std::to_string(v);
+			jtype = value_type::DOUBLE;
 			return *this;
 		}
 		json& operator=(float v)
 		{
-			if (jtype == value_type::DOUBLE) {
-				value = std::to_string(v);
-			}
-			else {
-				std::string message = "illegality operator =,because the value type is" + value_type_name(jtype) + " set value type is float";
-				throw json_error(message);
-			}
+			value = std::to_string(v);
+			jtype = value_type::DOUBLE;
 			return *this;
 		}
 		json& operator=(bool v)
 		{
-			if (jtype == value_type::BOOL) {
-				value = v == true ? "true" : "false";
-			}
-			else {
-				std::string message = "illegality operator =,because the value type is" + value_type_name(jtype) + " set value type is bool";
-				throw json_error(message);
-			}
+			value = v == true ? "true" : "false";
+			jtype = value_type::BOOL;
 			return *this;
 		}
 
@@ -412,6 +400,17 @@ public:
 		}
 		throw json_error(message);
 	}
+	public:
+		void push_back(const json& j)
+		{
+			if (jtype == value_type::UNKNOW) {
+				jtype = value_type::ARRAY;
+			}
+			if (jtype != value_type::ARRAY) {
+				throw json_error("illegality operator push_back ,the type is not array");
+			}
+			jarray.push_back(j);
+		}
 	private:
 		value_type jtype;
 		std::string value;
