@@ -512,6 +512,16 @@ namespace xmh {
 			return token[0] == '"';
 		}
 
+		bool is_nill_str(const std::string& token)
+		{
+			std::string nill_token = token;
+			trim_all(nill_token);
+			if (nill_token == "null" || nill_token == "NULL") {
+				return true;
+			}
+			return false;
+		}
+
 		int count_find_char_size(const char* ptr, char c)
 		{
 			int count = 0;
@@ -724,7 +734,7 @@ namespace xmh {
 					//            std::cout<<"total size===="<<json_stack.size()<<std::endl;
 					json_stack.pop_back();
 				}
-				else if (*iter == '\"') {  //element is string or bool or null or number
+				else if (*iter == '\"') {  //element is string
 										   //std::cout << "is string value element===" << json_stack.size() << std::endl;
 					char open_token = *iter;
 					iter++;
@@ -746,6 +756,9 @@ namespace xmh {
 						iter++;
 					}
 					std::string str(first, iter);
+					if(*iter == ']'){
+						--iter;
+					}
 					if (is_bool_str(str)) {
 						stack->jtype = value_type::BOOL;
 						stack->value = std::move(str);
@@ -760,6 +773,12 @@ namespace xmh {
 						if (pos_dot != 0 && count_find_char_size(str.c_str(), '.') == 1) {  //is a double number
 							stack->jtype = value_type::DOUBLE;
 						}
+						json_stack.pop_back();
+					}
+					else if(is_nill_str(str))
+					{
+						stack->value = std::move(str);
+						stack->jtype = value_type::NILL;
 						json_stack.pop_back();
 					}
 				}
