@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/xjson.dir/main.cpp.o  -o xjson 
