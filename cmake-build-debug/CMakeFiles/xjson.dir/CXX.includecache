@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dy2018/github/xjson/main.cpp
+iostream
+-
+xjson.hpp
+/home/dy2018/github/xjson/xjson.hpp
+
+/home/dy2018/github/xjson/xjson.hpp
+map
+-
+vector
+-
+string
+-
+sstream
+-
+

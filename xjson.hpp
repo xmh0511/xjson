@@ -676,6 +676,7 @@ namespace xmh {
 					//std::cout << "init===" << *iter << *(iter - 1) << *(iter - 2) << std::endl;
 					break;
 				}
+				skip_white_space(iter);
 				//		if (*iter == ',') {
 				//            json_stack.pop_back();
 				//			iter++;
@@ -717,6 +718,7 @@ namespace xmh {
 				if (*iter == ']') {
 					break;
 				}
+				skip_white_space(iter);
 				//std::cout << "in block array==" << *iter << std::endl;
 				auto stack = json_stack.back();
 				if (*iter != ',' && *iter > 32) {
@@ -756,6 +758,7 @@ namespace xmh {
 						iter++;
 					}
 					std::string str(first, iter);
+					trim_all(str);
 					if(*iter == ']'){
 						--iter;
 					}

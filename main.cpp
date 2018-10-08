@@ -11,7 +11,7 @@ int main()
 	//    std::cout << j.jmap["b12"].jmap["name"].value << std::endl;
 	//    std::cout << j.jmap["c1"].value << std::endl;
 
-	std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":false  ,\"message\":\"this is just ','a message\"}},\"bb\":\"0000\",\"number\":-123456 ,\"list\":[{\"age\":18},{\"age\":20},\"hahahah\",null],\"time\":null}";  //"1","2","3"
+	std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":false  ,\"message\":\"this is just ','a message\"}},\"bb\":\"0000\",\"number\":-123456 ,\"list\":[{\"age\":18},{\"age\":20},\"hahahah\",      null],\"time\":null}";  //"1","2","3"
 	auto j2 = xmh::json::json_parse(test2);
 	std::cout << j2["number"].get<int>() << std::endl;
 	std::cout << j2["a"]["child"].get<std::string>()<< std::endl;
