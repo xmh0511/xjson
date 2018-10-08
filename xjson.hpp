@@ -566,7 +566,7 @@ namespace xmh {
 		void get_value_str(const char*& iter)
 		{
 			const char* first = iter;
-			while (*iter && *iter != '"') {
+			while (*iter && (*iter != '"' || *(iter-1)== '\\')) {
 				iter++;
 			}
 			auto stack = json_stack.back();
@@ -736,13 +736,13 @@ namespace xmh {
 					//            std::cout<<"total size===="<<json_stack.size()<<std::endl;
 					json_stack.pop_back();
 				}
-				else if (*iter == '\"') {  //element is string
+				else if (*iter == '"') {  //element is string
 										   //std::cout << "is string value element===" << json_stack.size() << std::endl;
 					char open_token = *iter;
 					iter++;
 					const char* first = iter;
 					bool in_string = true;
-					while (*iter && *iter != open_token && (*iter != ',' || in_string)) {
+					while (*iter && (*iter != open_token || *(iter-1)=='\\') && (*iter != ',' || in_string)) {
 						iter++;
 					}
 					//            std::cout<<"value string =="<<str<<std::endl;
