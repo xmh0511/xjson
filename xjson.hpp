@@ -692,7 +692,7 @@ namespace xmh {
 					switch (stack->jtype) {  //if parent is object
 					case value_type::OBJECT:
 					{
-						stack->jmap[key] = json{};
+//						stack->jmap[key] = json{};
 						json_stack.push_back(&stack->jmap[key]);
 					}
 					break;
