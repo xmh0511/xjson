@@ -186,11 +186,6 @@ namespace xmh {
 			}
 			return jarray[index];
 		}
-		//		template<typename T>
-		//		T get()
-		//		{
-		//
-		//		}
 		template<typename T>
 		std::enable_if_t<std::is_same_v<int, T>, int> get()
 		{
@@ -571,7 +566,6 @@ namespace xmh {
 			}
 			auto stack = json_stack.back();
 			stack->value = std::string(first, iter);
-			//json_stack.pop_back();
 		}
 
 		void get_value_number(const char*& iter)
@@ -591,10 +585,7 @@ namespace xmh {
 					stack->jtype = value_type::DOUBLE;
 				}
 			}
-			//std::cout << str<<"  type===="<<value_type_name(stack->jtype) << std::endl;
 			stack->value = std::move(str);
-			//std::cout << "next str===" << *iter << *(iter + 1) << *(iter + 2) << *(iter + 3) << std::endl;
-			//json_stack.pop_back();
 		}
 
 		void get_bool_str(const char*& iter)
@@ -606,7 +597,6 @@ namespace xmh {
 				stack->jtype = value_type::BOOL;
 				stack->value = std::move(bool_token);
 			}
-			//json_stack.pop_back();
 		}
 
 		void get_nill_str(const char*& iter)
@@ -618,12 +608,10 @@ namespace xmh {
 				stack->jtype = value_type::NILL;
 				stack->value = "null";
 			}
-			//json_stack.pop_back();
 		}
 
 		void parse_value(const char*& iter)
 		{
-			//std::cout << "parse value" << std::endl;
 			auto stack = json_stack.back();
 			skip_white_space(iter);
 			if (*iter == '{') {  //the value is a json object
@@ -642,14 +630,11 @@ namespace xmh {
 				iter++;
 				stack->jtype = value_type::STRING;
 				get_value_str(iter);
-				//std::cout << *iter << *(iter + 1) << std::endl;
 			}
 
 			if (*iter == '-' || is_number_str(*iter)) {  //maybe a number
-														 //std::cout << "maybe a number" << std::endl;
 				get_value_number(iter);
 				--iter;
-				//std::cout << "a number after==" << *iter<< *(iter+1) << std::endl;
 			}
 
 			if (*iter == 'f' || *iter == 't') {  //maybe a bool
@@ -660,55 +645,33 @@ namespace xmh {
 				get_nill_str(iter);
 			}
 			json_stack.pop_back();
-			//skip_white_space(iter);
-			//std::cout << "out of getvalue===" << *iter << std::endl;
 		}
 
 		void parse_block_object(const char*& iter)
 		{
 			skip_white_space(iter);
-			//	std::cout <<"init==="<< *iter <<*(iter+1)<<*(iter+2)<< std::endl;
 			while (*iter)
 			{
-				//std::cout << "init===" << *iter << *(iter + 1) << *(iter + 2) << std::endl;
 				if (*iter == '}') {
-					//json_stack.pop_back();
-					//std::cout << "init===" << *iter << *(iter - 1) << *(iter - 2) << std::endl;
 					break;
 				}
 				skip_white_space(iter);
-				//		if (*iter == ',') {
-				//            json_stack.pop_back();
-				//			iter++;
-				//		}
 				if (*iter == '"') {
-					//std::cout << *(iter + 1) << std::endl;
-					//std::cout << *iter << *(iter + 1) << std::endl;
 					iter++;
 					auto key = get_key_name(iter);
-					//std::cout<<"name====" << key << std::endl;
 					eat_white_space_and_char(iter, ':');
 					auto stack = json_stack.back();
 					switch (stack->jtype) {  //if parent is object
 					case value_type::OBJECT:
 					{
-//						stack->jmap[key] = json{};
 						json_stack.push_back(&stack->jmap[key]);
 					}
 					break;
-					//			    case value_type::ARRAY:
-					//                {
-					////                    std::cout<<"parent is array"<<std::endl;
-					//                    stack->jarray.push_back(json{});
-					//                    json_stack.push_back(&stack->jarray.back());
-					//                }
-					//                    break;
 					}
 					parse_value(iter);
 				}
 				iter++;
 			}
-			//std::cout << "end token }" << std::endl;
 		}
 
 		void parse_block_array(const char*& iter)
@@ -719,7 +682,6 @@ namespace xmh {
 					break;
 				}
 				skip_white_space(iter);
-				//std::cout << "in block array==" << *iter << std::endl;
 				auto stack = json_stack.back();
 				if (*iter != ',' && *iter > 32) {
 					if (stack->jtype == value_type::ARRAY) {
@@ -728,23 +690,19 @@ namespace xmh {
 					}
 				}
 				if (*iter == '{') {  // element is ojbect
-									 //            std::cout<<"first ===="<< stack->jarray.size()<<std::endl;
 					auto stack = json_stack.back();
 					stack->jtype = value_type::OBJECT;
 					iter++;
 					parse_block_object(iter);
-					//            std::cout<<"total size===="<<json_stack.size()<<std::endl;
 					json_stack.pop_back();
 				}
 				else if (*iter == '"') {  //element is string
-										   //std::cout << "is string value element===" << json_stack.size() << std::endl;
 					char open_token = *iter;
 					iter++;
 					const char* first = iter;
 					while (*iter && (*iter != open_token || *(iter-1)=='\\')) {
 						iter++;
 					}
-					//            std::cout<<"value string =="<<str<<std::endl;
 					auto stack = json_stack.back();
 					stack->jtype = value_type::STRING;
 					stack->value = std::string(first, iter);
