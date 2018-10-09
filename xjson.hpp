@@ -192,7 +192,7 @@ namespace xmh {
 		//
 		//		}
 		template<typename T>
-		std::enable_if_t<std::is_same_v<int, T>, int> get()
+		typename std::enable_if<std::is_same<int, T>::value, int>::type get()
 		{
 			if (jtype != value_type::INT) {
 				std::string message = "illegality get,the value type is not int";
@@ -202,7 +202,7 @@ namespace xmh {
 		}
 
 		template<typename T>
-		std::enable_if_t<std::is_same_v<double, T>, double> get()
+        typename std::enable_if<std::is_same<double, T>::value, double>::type get()
 		{
 			if (jtype != value_type::DOUBLE) {
 				std::string message = "illegality get,the value type is not double";
@@ -212,7 +212,7 @@ namespace xmh {
 		}
 
 		template<typename T>
-		std::enable_if_t<std::is_same_v<std::string, T>, std::string> get()
+		typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type get()
 		{
 			if (jtype != value_type::STRING) {
 				std::string message = "illegality get,the value type is not string";
@@ -222,7 +222,7 @@ namespace xmh {
 		}
 
 		template<typename T>
-		std::enable_if_t<std::is_same_v<std::nullptr_t, T>, std::nullptr_t> get()
+		typename std::enable_if<std::is_same<std::nullptr_t, T>::value, std::nullptr_t>::type get()
 		{
 			if (jtype != value_type::NILL) {
 				std::string message = "illegality get,the value type is not null";
@@ -231,7 +231,7 @@ namespace xmh {
 			return std::nullptr_t{};
 		}
 		template<typename T>
-		std::enable_if_t<std::is_same_v<bool, T>, bool> get()
+		typename std::enable_if<std::is_same<bool, T>::value, bool>::type get()
 		{
 			if (jtype != value_type::BOOL) {
 				std::string message = "illegality get,the value type is not bool";
