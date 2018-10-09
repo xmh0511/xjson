@@ -34,11 +34,19 @@ namespace xmh {
     class json_iterator
     {
     public:
-        json_iterator(typename std::vector<T>::iterator arr_iter, value_type v_t) :arr_iter_(arr_iter), json_type(v_t)
+        json_iterator(typename std::vector<T>::iterator arr_iter, value_type v_t) :arr_iter_(arr_iter), json_type(v_t),is_const_it(false)
         {
 
         }
-        json_iterator(typename std::map<std::string, T>::iterator map_iter, value_type v_t) :map_iter_(map_iter), json_type(v_t)
+        json_iterator(typename std::map<std::string, T>::iterator map_iter, value_type v_t) :map_iter_(map_iter), json_type(v_t),is_const_it(false)
+        {
+
+        }
+        json_iterator(typename std::vector<T>::const_iterator const_arr_iter, value_type v_t) :const_arr_iter_(const_arr_iter), json_type(v_t),is_const_it(true)
+        {
+
+        }
+        json_iterator(typename std::map<std::string, T>::const_iterator const_map_iter, value_type v_t) :const_map_iter_(const_map_iter), json_type(v_t),is_const_it(true)
         {
 
         }
@@ -76,16 +84,62 @@ namespace xmh {
         {
             return operator--();
         }
-        bool operator!=(const json_iterator& it)
+
+        bool operator!=(const json_iterator& it) const
         {
-            if (json_type == value_type::ARRAY) {
-                return arr_iter_ != it.arr_iter_;
-            }
-            if (json_type == value_type::OBJECT) {
-                return map_iter_ != it.map_iter_;
+            if(!is_const_it){
+                if (json_type == value_type::ARRAY) {
+                    return arr_iter_ != it.arr_iter_;
+                }
+                if (json_type == value_type::OBJECT) {
+                    return map_iter_ != it.map_iter_;
+                }
+            }else{
+                if (json_type == value_type::ARRAY) {
+                    return const_arr_iter_ != it.const_arr_iter_;
+                }
+                if (json_type == value_type::OBJECT) {
+                    return const_map_iter_ != it.const_map_iter_;
+                }
             }
             throw json_error("illegality operator for the type");
         }
+        /*const version */
+        const json_iterator & operator++() const
+        {
+            if (json_type == value_type::ARRAY)
+            {
+                ++const_arr_iter_;
+            }
+            if (json_type == value_type::OBJECT)
+            {
+                ++const_map_iter_;
+            }
+            return *this;
+        }
+        const json_iterator& operator++(int) const
+        {
+            return operator++();
+        }
+
+        const json_iterator & operator--() const
+        {
+            if (json_type == value_type::ARRAY)
+            {
+                --const_arr_iter_;
+            }
+            if (json_type == value_type::OBJECT)
+            {
+                --const_map_iter_;
+            }
+            return *this;
+        }
+        const json_iterator& operator--(int) const
+        {
+            return operator--();
+        }
+
+        /*const version end */
     public:
         T & operator*()
         {
@@ -97,12 +151,29 @@ namespace xmh {
             }
             throw json_error("illegality operator for the type");
         }
+        const T& operator*() const
+        {
+            if (json_type == value_type::ARRAY) {
+                return *const_arr_iter_;
+            }
+            if (json_type == value_type::OBJECT) {
+                return const_map_iter_->second;
+            }
+            throw json_error("illegality operator for the type");
+        }
         std::string key()
         {
             if (json_type != value_type::OBJECT) {
                 throw json_error("illegality operator for the type,because it's not object");
             }
             return map_iter_->first;
+        }
+        std::string key() const
+        {
+            if (json_type != value_type::OBJECT) {
+                throw json_error("illegality operator for the type,because it's not object");
+            }
+            return const_map_iter_->first;
         }
         T& value()
         {
@@ -111,16 +182,73 @@ namespace xmh {
             }
             return map_iter_->second;
         }
+        const T& value() const
+        {
+            if (json_type != value_type::OBJECT) {
+                throw json_error("illegality operator for the type,because it's not object");
+            }
+            return const_map_iter_->second;
+        }
     private:
         typename std::vector<T>::iterator arr_iter_;
         typename std::map<std::string, T>::iterator map_iter_;
+
+        mutable  typename std::vector<T>::const_iterator const_arr_iter_;
+        mutable typename std::map<std::string, T>::const_iterator const_map_iter_;
         value_type json_type;
+        bool is_const_it;
+    };
+
+    template<typename T>
+    class const_json_iterator {
+    public:
+        const_json_iterator(const json_iterator<T>& it):iter(it){};
+        const_json_iterator(const const_json_iterator&) = default;
+        const_json_iterator& operator++()
+        {
+            ++iter;
+            return *this;
+        }
+        const_json_iterator& operator++(int)
+        {
+            return iter++;
+        }
+
+        const_json_iterator& operator--()
+        {
+            --iter;
+            return *this;
+        }
+        const_json_iterator& operator--(int)
+        {
+            iter--;
+            return *this;
+        }
+
+        bool operator!=(const const_json_iterator& const_iter)
+        {
+            return const_iter.iter != iter;
+        }
+        const T& operator*()
+        {
+            return *iter;
+        }
+        std::string key()
+        {
+            return iter.key();
+        }
+        const T& value()
+        {
+            return iter.value();
+        }
+    private:
+        const json_iterator<T> iter;
     };
 
     class json
     {
     private:
-        std::string value_type_name(value_type v)
+        static std::string value_type_name(value_type v)
         {
             switch (v) {
                 case value_type::INT:
@@ -157,6 +285,9 @@ namespace xmh {
         {
             jtype = value_type::UNKNOW;
         }
+
+        json(const json& j) = default;
+
         json& operator[](const std::string& key)
         {
             if (jtype == value_type::UNKNOW) {
@@ -186,8 +317,37 @@ namespace xmh {
             }
             return jarray[index];
         }
+
+        /* const json version */
+        const json& operator[](const std::string& key) const
+        {
+            if (jtype != value_type::OBJECT)
+            {
+                std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
+                throw json_error(message);
+            }
+            return jmap.at(key);
+        }
+        const json& operator[](const char* str) const
+        {
+            return operator[](std::string(str));
+        }
+        const json& operator[](int index) const
+        {
+            if (jtype != value_type::ARRAY)
+            {
+                std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
+                throw json_error(message);
+            }
+            if (jarray.size() <= (std::size_t)index) {
+                std::string message = "out of json array range";
+                throw json_error(message);
+            }
+            return jarray[index];
+        }
+        /* const json version end */
         template<typename T>
-        typename std::enable_if<std::is_same<int, T>::value, int>::type get()
+        typename std::enable_if<std::is_same<int, T>::value, int>::type get() const
         {
             if (jtype != value_type::INT) {
                 std::string message = "illegality get,the value type is not int";
@@ -197,7 +357,7 @@ namespace xmh {
         }
 
         template<typename T>
-        typename std::enable_if<std::is_same<double, T>::value, double>::type get()
+        typename std::enable_if<std::is_same<double, T>::value, double>::type get() const
         {
             if (jtype != value_type::DOUBLE) {
                 std::string message = "illegality get,the value type is not double";
@@ -207,7 +367,7 @@ namespace xmh {
         }
 
         template<typename T>
-        typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type get()
+        typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type get() const
         {
             if (jtype != value_type::STRING) {
                 std::string message = "illegality get,the value type is not string";
@@ -217,7 +377,7 @@ namespace xmh {
         }
 
         template<typename T>
-        typename std::enable_if<std::is_same<std::nullptr_t, T>::value, std::nullptr_t>::type get()
+        typename std::enable_if<std::is_same<std::nullptr_t, T>::value, std::nullptr_t>::type get() const
         {
             if (jtype != value_type::NILL) {
                 std::string message = "illegality get,the value type is not null";
@@ -226,7 +386,7 @@ namespace xmh {
             return std::nullptr_t{};
         }
         template<typename T>
-        typename std::enable_if<std::is_same<bool, T>::value, bool>::type get()
+        typename std::enable_if<std::is_same<bool, T>::value, bool>::type get() const
         {
             if (jtype != value_type::BOOL) {
                 std::string message = "illegality get,the value type is not bool";
@@ -273,7 +433,7 @@ namespace xmh {
             return *this;
         }
 
-        operator std::string()
+        operator std::string() const
         {
             if (jtype == value_type::STRING) {
                 return value;
@@ -283,7 +443,7 @@ namespace xmh {
             }
         }
 
-        operator int()
+        operator int() const
         {
             if (jtype == value_type::INT) {
                 return atoi(value.c_str());
@@ -293,7 +453,7 @@ namespace xmh {
             }
         }
 
-        operator double()
+        operator double() const
         {
             if (jtype == value_type::DOUBLE) {
                 return atof(value.c_str());
@@ -303,7 +463,7 @@ namespace xmh {
             }
         }
 
-        operator bool()
+        operator bool() const
         {
             if (jtype == value_type::BOOL) {
                 return value == "true" ? true : false;
@@ -313,44 +473,44 @@ namespace xmh {
             }
         }
     public:
-        std::string stringify()
+        std::string stringify() const
         {
             std::stringstream buff;
             dump(buff);
             return buff.str();
         }
     public:
-        bool is_object()
+        bool is_object() const
         {
             return jtype == value_type::OBJECT;
         }
 
-        bool is_array()
+        bool is_array() const
         {
             return jtype == value_type::ARRAY;
         }
 
-        bool is_number()
+        bool is_number() const
         {
             return jtype == value_type::INT || jtype == value_type::DOUBLE;
         }
-        bool is_integer()
+        bool is_integer() const
         {
             return jtype == value_type::INT;
         }
-        bool is_double()
+        bool is_double() const
         {
             return jtype == value_type::DOUBLE;
         }
-        bool is_string()
+        bool is_string() const
         {
             return jtype == value_type::STRING;
         }
-        bool is_boolean()
+        bool is_boolean() const
         {
             return jtype == value_type::BOOL;
         }
-        bool is_null()
+        bool is_null() const
         {
             return jtype == value_type::NILL;
         }
@@ -389,6 +549,42 @@ namespace xmh {
             }
             throw json_error(message);
         }
+        /* const json version */
+        const_json_iterator<json> begin() const
+        {
+            std::string message = "illegality operator begin,the type is not array or object";
+            if ((jtype != value_type::ARRAY) && (jtype != value_type::OBJECT))
+            {
+                throw json_error(message);
+            }
+            if (jtype == value_type::ARRAY)
+            {
+                return json_iterator<json>(jarray.cbegin(), jtype);
+            }
+            if (jtype == value_type::OBJECT)
+            {
+                return json_iterator<json>(jmap.cbegin(), jtype);
+            }
+            throw json_error(message);
+        }
+        const_json_iterator<json> end() const
+        {
+            std::string message = "illegality operator begin,the type is not array or object";
+            if (jtype != value_type::ARRAY && jtype != value_type::OBJECT)
+            {
+                throw json_error(message);
+            }
+            if (jtype == value_type::ARRAY)
+            {
+                return json_iterator<json>(jarray.cend(), jtype);
+            }
+            if (jtype == value_type::OBJECT)
+            {
+                return json_iterator<json>(jmap.cend(), jtype);
+            }
+            throw json_error(message);
+        }
+        /* const json version end */
     public:
         void push_back(const json& j)
         {
@@ -406,7 +602,7 @@ namespace xmh {
         std::map<std::string, json> jmap;
         std::vector<json> jarray;
     private:
-        void dump(std::stringstream& buff)
+        void dump(std::stringstream& buff) const
         {
             if (jtype == value_type::OBJECT) {
                 auto last_iter = jmap.end();
@@ -673,7 +869,7 @@ namespace xmh {
                 auto stack = json_stack.back();
                 if (*iter != ',' && *iter > 32) {
                     if (stack->jtype == value_type::ARRAY) {
-                        stack->jarray.push_back(json{});
+                        stack->jarray.resize(stack->jarray.size()+1);
                         json_stack.push_back(&stack->jarray.back());
                     }
                 }
