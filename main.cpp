@@ -11,7 +11,7 @@ int main()
 	//    std::cout << j.jmap["b12"].jmap["name"].value << std::endl;
 	//    std::cout << j.jmap["c1"].value << std::endl;
 
-	std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":false  ,\"message\":\"this is just \\\" ','a message\"}},\"bb\":\"0000\",\"number\":-123456 ,\"list\":[{\"age\":18},{\"age\":20},\"ha\\\"   hahah\",      null],\"time\":null}";  //"1","2","3"
+	std::string test2 = "{\"a\":{\"child\":\"text1234\",\"child2\":\"text123456789\",\"cnumber\":{\"v\":12.0123,\"success\":false  ,\"message\":\"this is just \\\" ','a message\"}},\"bb\":\"0000\",\"number\":-123456 ,\"list\":[{\"age\":  18 },{\"age\": 20  },\"ha\\\"   hahah\",      null ],\"time\":null}";  //"1","2","3"
 	auto j2 = xmh::json::json_parse(test2);
 	std::cout<<j2.stringify()<<std::endl;
 	std::cout << j2["number"].get<int>() << std::endl;
@@ -52,5 +52,11 @@ int main()
 	root["list"][0] = iter2;
 	root["list"].push_back(iter);
 	std::cout << root.stringify() << std::endl;
+
+
+//	std::string tstr = " {   \"list\"       :  [    {    \"halo\"  :      18         }     ,       {\"age\":    20 }       ] }";
+//	auto jj = xmh::json::json_parse(tstr);
+//	std::cout<<jj.stringify()<<std::endl;
+//	std::cout<<jj["list"][0]["halo"].get<int>()<<std::endl;
 	return 0;
 }

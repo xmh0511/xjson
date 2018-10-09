@@ -414,26 +414,26 @@ namespace xmh {
 		void dump(std::stringstream& buff)
 		{
 			if (jtype == value_type::OBJECT) {
+				auto last_iter = jmap.end();
+				last_iter--;
 				buff << '{';
 				for (auto iter = jmap.begin(); iter != jmap.end(); ++iter) {
 					buff << '"' << iter->first << "\":";
 					//std::cout << buff.str() << std::endl;
 					iter->second.dump(buff);
-					auto next = iter;
-					next++;
-					if (next != jmap.end()) {
+					if (iter != last_iter) {
 						buff << ',';
 					}
 				}
 				buff << '}';
 			}
 			if (jtype == value_type::ARRAY) {
+				auto last_iter = jarray.end();
+				last_iter--;
 				buff << '[';
 				for (auto iter = jarray.begin(); iter != jarray.end(); ++iter) {
 					iter->dump(buff);
-					auto next = iter;
-					next++;
-					if (next != jarray.end()) {
+					if (iter != last_iter) {
 						buff << ',';
 					}
 				}
@@ -503,7 +503,7 @@ namespace xmh {
 		bool is_bool_str(const std::string& token)
 		{
 			std::string ntoken = token;
-			trim_all(ntoken);
+			//trim_all(ntoken);
 			return ntoken == "true" || ntoken == "false";
 		}
 
@@ -515,7 +515,7 @@ namespace xmh {
 		bool is_nill_str(const std::string& token)
 		{
 			std::string nill_token = token;
-			trim_all(nill_token);
+			//trim_all(nill_token);
 			if (nill_token == "null" || nill_token == "NULL") {
 				return true;
 			}
@@ -538,7 +538,7 @@ namespace xmh {
 		std::string read_token_value(const char*& iter)
 		{
 			const char* first = iter;
-			while (*iter && *iter != ',' && *iter != '}' && *iter != ']') {
+			while (*iter && *iter != ',' && *iter != '}' && *iter != ']' && *iter>32) {
 				iter++;
 			}
 			return std::string(first, iter);
@@ -577,7 +577,7 @@ namespace xmh {
 		void get_value_number(const char*& iter)
 		{
 			std::string str = read_token_value(iter);
-			trim_all(str);
+			//trim_all(str);
 			auto stack = json_stack.back();
 			if (!is_number_str(str.c_str())) {
 				stack->jtype = value_type::UNKNOW;
@@ -600,7 +600,7 @@ namespace xmh {
 		void get_bool_str(const char*& iter)
 		{
 			std::string bool_token = read_token_value(iter);
-			trim_all(bool_token);
+			//trim_all(bool_token);
 			if (bool_token == "true" || bool_token == "false") {
 				auto stack = json_stack.back();
 				stack->jtype = value_type::BOOL;
@@ -612,7 +612,7 @@ namespace xmh {
 		void get_nill_str(const char*& iter)
 		{
 			std::string nill_token = read_token_value(iter);
-			trim_all(nill_token);
+			//trim_all(nill_token);
 			if (nill_token == "null" || nill_token == "NULL") {
 				auto stack = json_stack.back();
 				stack->jtype = value_type::NILL;
@@ -649,7 +649,7 @@ namespace xmh {
 														 //std::cout << "maybe a number" << std::endl;
 				get_value_number(iter);
 				--iter;
-				//std::cout << "a number after==" << *iter<< *(iter+1) << std::endl;
+//				std::cout << "a number after==" << std::string(iter,10) << std::endl;
 			}
 
 			if (*iter == 'f' || *iter == 't') {  //maybe a bool
@@ -671,12 +671,12 @@ namespace xmh {
 			while (*iter)
 			{
 				//std::cout << "init===" << *iter << *(iter + 1) << *(iter + 2) << std::endl;
+                skip_white_space(iter);
 				if (*iter == '}') {
 					//json_stack.pop_back();
-					//std::cout << "init===" << *iter << *(iter - 1) << *(iter - 2) << std::endl;
+//					std::cout << "init===" << std::string(iter-4,4) << std::endl;
 					break;
 				}
-				skip_white_space(iter);
 				//		if (*iter == ',') {
 				//            json_stack.pop_back();
 				//			iter++;
@@ -686,7 +686,7 @@ namespace xmh {
 					//std::cout << *iter << *(iter + 1) << std::endl;
 					iter++;
 					auto key = get_key_name(iter);
-					//std::cout<<"name====" << key << std::endl;
+//					std::cout<<"name====" << key << std::endl;
 					eat_white_space_and_char(iter, ':');
 					auto stack = json_stack.back();
 					switch (stack->jtype) {  //if parent is object
@@ -715,11 +715,11 @@ namespace xmh {
 		{
 			skip_white_space(iter);
 			while (*iter) {
+                skip_white_space(iter);
 				if (*iter == ']') {
 					break;
 				}
-				skip_white_space(iter);
-				//std::cout << "in block array==" << *iter << std::endl;
+//				std::cout << "in block array==" << *iter<<std::string(iter,18) << std::endl;
 				auto stack = json_stack.back();
 				if (*iter != ',' && *iter > 32) {
 					if (stack->jtype == value_type::ARRAY) {
@@ -753,11 +753,11 @@ namespace xmh {
 				else {  //element is bool or null or number
 					const char* first = iter;
 					auto stack = json_stack.back();
-					while (*iter && *iter != ',' && *iter != ']') {
+					while (*iter && *iter != ',' && *iter != ']' && *iter >32) {
 						iter++;
 					}
 					std::string str(first, iter);
-					trim_all(str);
+					//trim_all(str);
 					if(*iter == ']'){
 						--iter;
 					}
