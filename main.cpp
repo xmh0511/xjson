@@ -1,5 +1,5 @@
 #include <iostream>
-#include "xjson.hpp"
+#include "release/xjson.hpp"
 int main()
 {
 	//std::cout << sizeof(json) << std::endl;
