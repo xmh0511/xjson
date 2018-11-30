@@ -522,7 +522,9 @@ namespace xmh {
 			}
 			if (jtype == value_type::ARRAY) {
 				auto last_iter = jarray.end();
-				last_iter--;
+				if (!jarray.empty()) {
+					last_iter--;
+				}
 				buff << '[';
 				for (auto iter = jarray.begin(); iter != jarray.end(); ++iter) {
 					iter->dump(buff);
