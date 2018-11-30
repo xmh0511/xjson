@@ -120,7 +120,7 @@ namespace xmh {
 	class json
 	{
 	private:
-		std::string value_type_name(value_type v)
+		std::string value_type_name(value_type v) const
 		{
 			switch (v) {
 			case value_type::INT:
@@ -157,6 +157,39 @@ namespace xmh {
 		{
 			jtype = value_type::UNKNOW;
 		}
+		/////construct params
+		json(int v)
+		{
+			value = std::to_string(v);
+			jtype = value_type::INT;
+		}
+		json(const std::string& v)
+		{
+			value = v;
+			jtype = value_type::STRING;
+		}
+		json(const char* v)
+		{
+			value = std::string(v);
+			jtype = value_type::STRING;
+		}
+
+		json(double v)
+		{
+			value = std::to_string(v);
+			jtype = value_type::DOUBLE;
+		}
+		json(float v)
+		{
+			value = std::to_string(v);
+			jtype = value_type::DOUBLE;
+		}
+		json(bool v)
+		{
+			value = v == true ? "true" : "false";
+			jtype = value_type::BOOL;
+		}
+		/////
 		json& operator[](const std::string& key)
 		{
 			if (jtype == value_type::UNKNOW) {
@@ -186,13 +219,72 @@ namespace xmh {
 			}
 			return jarray[index];
 		}
+
+		json& operator[](std::size_t index)
+		{
+			if (jtype != value_type::ARRAY)
+			{
+				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
+				throw json_error(message);
+			}
+			if (jarray.size() <= (std::size_t)index) {
+				std::string message = "out of json array range";
+				throw json_error(message);
+			}
+			return jarray[index];
+		}
+		////const operator[]
+		json const& operator[](const std::string& key) const
+		{
+			//if (jtype == value_type::UNKNOW) {
+			//	jtype = value_type::OBJECT;
+			//}
+			if (jtype != value_type::OBJECT)
+			{
+				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
+				throw json_error(message);
+			}
+			return jmap[key];
+		}
+		json const& operator[](const char* str) const
+		{
+			return operator[](std::string(str));
+		}
+		json const& operator[](int index) const 
+		{
+			if (jtype != value_type::ARRAY)
+			{
+				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
+				throw json_error(message);
+			}
+			if (jarray.size() <= (std::size_t)index) {
+				std::string message = "out of json array range";
+				throw json_error(message);
+			}
+			return jarray[index];
+		}
+
+		json const& operator[](std::size_t index) const
+		{
+			if (jtype != value_type::ARRAY)
+			{
+				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
+				throw json_error(message);
+			}
+			if (jarray.size() <= (std::size_t)index) {
+				std::string message = "out of json array range";
+				throw json_error(message);
+			}
+			return jarray[index];
+		}
+		/////
 		//		template<typename T>
 		//		T get()
 		//		{
 		//
 		//		}
 		template<typename T>
-		typename std::enable_if<std::is_same<int, T>::value, int>::type get()
+		typename std::enable_if<std::is_same<int, T>::value, int>::type get() const
 		{
 			if (jtype != value_type::INT) {
 				std::string message = "illegality get,the value type is not int";
@@ -202,7 +294,7 @@ namespace xmh {
 		}
 
 		template<typename T>
-        typename std::enable_if<std::is_same<double, T>::value, double>::type get()
+		typename std::enable_if<std::is_same<double, T>::value, double>::type get() const
 		{
 			if (jtype != value_type::DOUBLE) {
 				std::string message = "illegality get,the value type is not double";
@@ -212,7 +304,7 @@ namespace xmh {
 		}
 
 		template<typename T>
-		typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type get()
+		typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type get() const
 		{
 			if (jtype != value_type::STRING) {
 				std::string message = "illegality get,the value type is not string";
@@ -222,7 +314,7 @@ namespace xmh {
 		}
 
 		template<typename T>
-		typename std::enable_if<std::is_same<std::nullptr_t, T>::value, std::nullptr_t>::type get()
+		typename std::enable_if<std::is_same<std::nullptr_t, T>::value, std::nullptr_t>::type get() const
 		{
 			if (jtype != value_type::NILL) {
 				std::string message = "illegality get,the value type is not null";
@@ -231,7 +323,7 @@ namespace xmh {
 			return std::nullptr_t{};
 		}
 		template<typename T>
-		typename std::enable_if<std::is_same<bool, T>::value, bool>::type get()
+		typename std::enable_if<std::is_same<bool, T>::value, bool>::type get() const
 		{
 			if (jtype != value_type::BOOL) {
 				std::string message = "illegality get,the value type is not bool";
@@ -277,6 +369,7 @@ namespace xmh {
 			jtype = value_type::BOOL;
 			return *this;
 		}
+
 
 		operator std::string()
 		{
@@ -325,38 +418,38 @@ namespace xmh {
 			return buff.str();
 		}
 	public:
-		bool is_object()
+		bool is_object() const
 		{
 			return jtype == value_type::OBJECT;
 		}
 
-		bool is_array()
+		bool is_array() const
 		{
 			return jtype == value_type::ARRAY;
 		}
 
-		bool is_number()
+		bool is_number() const
 		{
 			return jtype == value_type::INT || jtype == value_type::DOUBLE;
 		}
-		bool is_integer()
+		bool is_integer() const
 		{
 			return jtype == value_type::INT;
 		}
-		bool is_double()
+		bool is_double() const
 		{
 			return jtype == value_type::DOUBLE;
 		}
-		bool is_string()
+		bool is_string() const
 		{
 			return jtype == value_type::STRING;
 		}
-		bool is_boolean()
+		bool is_boolean() const
 		{
 			return jtype == value_type::BOOL;
 		}
-		bool is_null()
-		{
+		bool is_null() const
+		{ 
 			return jtype == value_type::NILL;
 		}
 	public:
@@ -406,10 +499,10 @@ namespace xmh {
 			jarray.push_back(j);
 		}
 	private:
-		value_type jtype;
-		std::string value;
-		std::map<std::string, json> jmap;
-		std::vector<json> jarray;
+		mutable value_type jtype;
+		mutable std::string value;
+		mutable std::map<std::string, json> jmap;
+		mutable std::vector<json> jarray;
 	private:
 		void dump(std::stringstream& buff)
 		{
@@ -538,7 +631,7 @@ namespace xmh {
 		std::string read_token_value(const char*& iter)
 		{
 			const char* first = iter;
-			while (*iter && *iter != ',' && *iter != '}' && *iter != ']' && *iter>32) {
+			while (*iter && *iter != ',' && *iter != '}' && *iter != ']' && *iter > 32) {
 				iter++;
 			}
 			return std::string(first, iter);
@@ -566,7 +659,7 @@ namespace xmh {
 		void get_value_str(const char*& iter)
 		{
 			const char* first = iter;
-			while (*iter && (*iter != '"' || *(iter-1)== '\\')) {
+			while (*iter && (*iter != '"' || *(iter - 1) == '\\')) {
 				iter++;
 			}
 			auto stack = json_stack.back();
@@ -649,7 +742,7 @@ namespace xmh {
 														 //std::cout << "maybe a number" << std::endl;
 				get_value_number(iter);
 				--iter;
-//				std::cout << "a number after==" << std::string(iter,10) << std::endl;
+				//				std::cout << "a number after==" << std::string(iter,10) << std::endl;
 			}
 
 			if (*iter == 'f' || *iter == 't') {  //maybe a bool
@@ -671,7 +764,7 @@ namespace xmh {
 			while (*iter)
 			{
 				//std::cout << "init===" << *iter << *(iter + 1) << *(iter + 2) << std::endl;
-                skip_white_space(iter);
+				skip_white_space(iter);
 				if (*iter == '}') {
 					//json_stack.pop_back();
 //					std::cout << "init===" << std::string(iter-4,4) << std::endl;
@@ -686,13 +779,13 @@ namespace xmh {
 					//std::cout << *iter << *(iter + 1) << std::endl;
 					iter++;
 					auto key = get_key_name(iter);
-//					std::cout<<"name====" << key << std::endl;
+					//					std::cout<<"name====" << key << std::endl;
 					eat_white_space_and_char(iter, ':');
 					auto stack = json_stack.back();
 					switch (stack->jtype) {  //if parent is object
 					case value_type::OBJECT:
 					{
-//						stack->jmap[key] = json{};
+						//						stack->jmap[key] = json{};
 						json_stack.push_back(&stack->jmap[key]);
 					}
 					break;
@@ -715,11 +808,11 @@ namespace xmh {
 		{
 			skip_white_space(iter);
 			while (*iter) {
-                skip_white_space(iter);
+				skip_white_space(iter);
 				if (*iter == ']') {
 					break;
 				}
-//				std::cout << "in block array==" << *iter<<std::string(iter,18) << std::endl;
+				//				std::cout << "in block array==" << *iter<<std::string(iter,18) << std::endl;
 				auto stack = json_stack.back();
 				if (*iter != ',' && *iter > 32) {
 					if (stack->jtype == value_type::ARRAY) {
@@ -741,7 +834,7 @@ namespace xmh {
 					char open_token = *iter;
 					iter++;
 					const char* first = iter;
-					while (*iter && (*iter != open_token || *(iter-1)=='\\')) {
+					while (*iter && (*iter != open_token || *(iter - 1) == '\\')) {
 						iter++;
 					}
 					//            std::cout<<"value string =="<<str<<std::endl;
@@ -753,12 +846,12 @@ namespace xmh {
 				else {  //element is bool or null or number
 					const char* first = iter;
 					auto stack = json_stack.back();
-					while (*iter && *iter != ',' && *iter != ']' && *iter >32) {
+					while (*iter && *iter != ',' && *iter != ']' && *iter > 32) {
 						iter++;
 					}
 					std::string str(first, iter);
 					//trim_all(str);
-					if(*iter == ']'){
+					if (*iter == ']') {
 						--iter;
 					}
 					if (is_bool_str(str)) {
@@ -777,7 +870,7 @@ namespace xmh {
 						}
 						json_stack.pop_back();
 					}
-					else if(is_nill_str(str))
+					else if (is_nill_str(str))
 					{
 						stack->value = std::move(str);
 						stack->jtype = value_type::NILL;
