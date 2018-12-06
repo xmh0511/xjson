@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-namespace xmhdebug {
+namespace xmh {
 	enum class value_type
 	{
 		INT,
