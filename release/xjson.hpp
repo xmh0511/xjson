@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-namespace xmh {
+namespace xmhdebug {
 	enum class value_type
 	{
 		INT,
@@ -241,7 +241,7 @@ namespace xmh {
 				std::string message = "illegality operator[],because the value type is" + value_type_name(jtype);
 				throw json_error(message);
 			}
-			return jmap[key];
+			return jmap.at(key);
 		}
 		json const& operator[](const char* str) const
 		{
@@ -363,7 +363,7 @@ namespace xmh {
 		}
 
 
-		operator std::string()
+		operator std::string() const
 		{
 			if (jtype == value_type::STRING) {
 				return value;
@@ -373,7 +373,7 @@ namespace xmh {
 			}
 		}
 
-		operator int()
+		operator int() const
 		{
 			if (jtype == value_type::INT) {
 				return atoi(value.c_str());
@@ -383,7 +383,7 @@ namespace xmh {
 			}
 		}
 
-		operator double()
+		operator double() const
 		{
 			if (jtype == value_type::DOUBLE) {
 				return atof(value.c_str());
@@ -393,7 +393,7 @@ namespace xmh {
 			}
 		}
 
-		operator bool()
+		operator bool() const
 		{
 			if (jtype == value_type::BOOL) {
 				return value == "true" ? true : false;
@@ -403,7 +403,7 @@ namespace xmh {
 			}
 		}
 	public:
-		std::string stringify()
+		std::string stringify() const
 		{
 			std::stringstream buff;
 			dump(buff);
@@ -491,12 +491,12 @@ namespace xmh {
 			jarray.push_back(j);
 		}
 	private:
-		mutable value_type jtype;
-		mutable std::string value;
-		mutable std::map<std::string, json> jmap;
-		mutable std::vector<json> jarray;
+		value_type jtype;
+		std::string value;
+		std::map<std::string, json> jmap;
+		std::vector<json> jarray;
 	private:
-		void dump(std::stringstream& buff)
+		void dump(std::stringstream& buff) const
 		{
 			if (jtype == value_type::OBJECT) {
 				auto last_iter = jmap.end();
